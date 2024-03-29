@@ -42,10 +42,6 @@ def main():
     startTime = time.time_ns()
 
     dashboard = meraki.DashboardAPI(print_console=False, maximum_retries=RETRIES)
-    # define vars
-    get_tasks = []
-    alert_results = []
-    netlist = {}
 
     # Get all networks that are tagged with specified tag
     networks = get_tagged_networks(dashboard, org_id, tag)
