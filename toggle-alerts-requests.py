@@ -1,6 +1,5 @@
 import requests
 import os
-import re
 import time
 
 # Define your Meraki API key and organization ID
