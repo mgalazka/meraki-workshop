@@ -2,7 +2,7 @@ import requests
 import os
 
 # Define your Meraki API key and organization ID
-api_key = os.environ.get('MERAKI_API_KEY')
+api_key = 'Bearer ' + os.environ.get('MERAKI_DASHBOARD_API_KEY')
 org_id = os.environ.get('MERAKI_ORG_ID')
 
 # Define the URL for Meraki API endpoints
