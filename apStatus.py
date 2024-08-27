@@ -78,7 +78,7 @@ async def main():
             netNames[net['id']] = net['name']
             get_tasks.append(get_mesh(aiomeraki, net['id']))
 
-        # Gather results of filtering for spokes
+        # Gather results of searching for mesh APs
         for task in asyncio.as_completed(get_tasks):
             mesh = await task
             meshes.append(mesh)
