@@ -9,6 +9,9 @@ RETRIES = 5  # max number of retries per call for 429 rate limit status code
 # Define your Meraki API key and organization ID
 org_id = os.environ.get('MERAKI_ORG_ID')
 
+#
+# Make sure to define your API key in environment variable 'MERAKI_DASHBOARD_API_KEY'
+#
 
 # Function to fetch APs and status across org
 async def get_wireless_status(aiomeraki: meraki.aio.AsyncDashboardAPI, orgid):
@@ -46,10 +49,10 @@ async def get_mesh(aiomeraki: meraki.aio.AsyncDashboardAPI, netid):
     try:
         meshaps = await aiomeraki.wireless.getNetworkWirelessMeshStatuses(networkId=netid)
     except meraki.AsyncAPIError as e:
-        #print(f"Meraki API error: {e}")
+        # Aborting silently if error, as expecting 4xx series errors if no mesh APs found
         return None
     except Exception as e:
-        #print(f"some other error: {e}")
+        # Aborting silently if issue.
         return None
     return meshaps
 
@@ -64,7 +67,6 @@ async def main():
         maximum_retries=RETRIES
     ) as aiomeraki:
         # define vars
-        networks = []
         get_tasks = []
         netNames = {}
         csvout = ""
@@ -78,14 +80,14 @@ async def main():
             netNames[net['id']] = net['name']
             get_tasks.append(get_mesh(aiomeraki, net['id']))
 
-        # Gather results of searching for mesh APs
+        # Gather results of mesh AP searching
         for task in asyncio.as_completed(get_tasks):
             mesh = await task
             meshes.append(mesh)
 
         # remove None entries from iterative functions
         meshes = list(itertools.filterfalse(lambda item: not item, meshes))
-        
+
 
         aps = await get_wireless_status(aiomeraki, org_id)
         # prep CSV header row
@@ -95,9 +97,9 @@ async def main():
             if ap['status'] != "online":
                 csvout += (f'"{netNames[ap['network']['id']]}","{ap['name']}","{ap['mac']}","{ap['status']}"\n')
 
-        for mesh1 in meshes:
-            for mesh in mesh1:
-                csvout += (f'"{netNames[apserial[mesh['serial']]['network']['id']]}","{apserial[mesh['serial']]['name']}","{apserial[mesh['serial']]['mac']}","repeater"\n')
+        for meshNet in meshes:
+            for meshAp in meshNet:
+                csvout += (f'"{netNames[apserial[meshAp['serial']]['network']['id']]}","{apserial[meshAp['serial']]['name']}","{apserial[meshAp['serial']]['mac']}","repeater"\n')
         print(csvout)
         with open("aps.csv","w") as apfile:
             apfile.write(csvout)
