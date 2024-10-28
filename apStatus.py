@@ -30,19 +30,14 @@ async def get_wireless_status(aiomeraki: meraki.aio.AsyncDashboardAPI, orgid):
 # Function to fetch a list of networks in the organization
 async def get_networks(aiomeraki: meraki.aio.AsyncDashboardAPI, orgid):
     try:
-        networks = await aiomeraki.organizations.getOrganizationNetworks(organizationId=orgid)
+        networks = await aiomeraki.organizations.getOrganizationNetworks(organizationId=orgid,productTypes=['wireless'])
     except meraki.AsyncAPIError as e:
         print(f"Meraki API error: {e}")
         return str(orgid)
     except Exception as e:
         print(f"some other error: {e}")
         return str(orgid)
-
-    aps = []
-    for network in networks:
-        if 'wireless' in network['productTypes']:
-            aps.append(network)
-    return aps
+    return networks
 
 
 async def get_mesh(aiomeraki: meraki.aio.AsyncDashboardAPI, netid):
